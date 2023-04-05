@@ -83,10 +83,10 @@ impl Sound for MyGlicolSound {
 
 	fn on_start_processing(&mut self) {
 
-    println!("on_start_processing");      
+    // println!("on_start_processing");      
 
     while let Some(command) = self.command_consumer.pop() {
-        println!("b");      
+        // xprintln!("b");      
         self.data.engine.update_with_code(&command.glicol_snippet);
         self.data.engine.update().ok();        
     }
@@ -102,7 +102,7 @@ impl Sound for MyGlicolSound {
 
     
     while self.left_blocks.len() < 32 {
-        println!("a");      
+        // println!("a");      
         // println!("on_start_p rocessing (pushing)");
         
         let block = self.data.engine.next_block(Vec::new());
@@ -113,7 +113,7 @@ impl Sound for MyGlicolSound {
 
 	fn process(&mut self, _dt: f64, _clock_info_provider: &ClockInfoProvider) -> Frame {
 
-    println!("process {}", _dt);      
+    // xprintln!("process {}", _dt);      
 
     // let l: f32 = rand::random::<f32>();
     // let r: f32 = rand::random::<f32>();

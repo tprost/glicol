@@ -11,11 +11,16 @@ use kira::{
     
 };
 
+use warp::{http::Response, Filter};
+
 use glicol_server::kira_and_glicol::*;
 
 use std::thread;
 use std::time::Duration;
 
+use std::cell::RefCell;
+use std::sync::Mutex;
+use std::sync::Arc;
 
 pub struct GlicolKiraPlayer {
     manager: AudioManager,
@@ -93,7 +98,9 @@ impl GlicolKiraPlayer {
      
 
 }
-fn main() {
+
+#[tokio::main]
+async fn main() {
 
     // let mut manager = AudioManager::<CpalBackend>::new(AudioManagerSettings::default()).expect("expect manager");
     // let sound_data_3 = MyGlicolSoundData::new(MyGlicolSoundSettings::default(), "o: sin 440");
@@ -105,14 +112,45 @@ fn main() {
     let mut player = GlicolKiraPlayer::new();
     player.play();
 
+    let playerRef = Arc::new(Mutex::new(player));
+
     println!("Hello world!");
 
-    thread::sleep(Duration::from_secs(10));
-
-    player.load("o: tri 210 >> mul 0.55");
-
-    thread::sleep(Duration::from_secs(10));
+    // Match any request and return hello world!
+    
 
 
-    player.pause();
+     // POST /code/:rate  {"name":"Sean","rate":2}
+    let route = warp::path("test")        
+        .and(warp::body::bytes())
+        .map(move |bytes: bytes::Bytes| {
+          let string = String::from_utf8(bytes.to_vec()).unwrap();          
+          let playerRef = playerRef.clone();
+          playerRef.lock().unwrap().load(&string);
+          println!("here you go: {}", string);
+          println!("bytes = {:?}", bytes);
+          return "test"
+        })
+        .then(|_| async move {
+          format!("Hello #{}", 3)
+        });
+        
+        
+    let routes = route.with(warp::log("post_text"));
+    
+
+    warp::serve(routes).run(([127, 0, 0, 1], 3032)).await;
+
+
+    // warp::serve(hi).run(([127, 0, 0, 1], 8080)).await; 
+
+    // thread::sleep(Duration::from_secs(10));
+
+    // player.load("o: tri 210 >> mul 0.55");
+
+    // thread::sleep(Duration::from_secs(10));
+
+
+    // player.pause();
+
 }
